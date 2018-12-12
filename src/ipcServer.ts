@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import ipc = require('node-ipc');
 import { Logger } from 'node-file-log';
 import { window, workspace } from 'vscode';
+import * as vscode from "vscode";
 
 // We use a UNIX Domain or Windows socket, respectively, for having a
 // communication channel from the debug adapter process back to the extension.
@@ -68,13 +69,23 @@ export class VSCodeExtensionIPC {
         });
 
         ipc.server.on('findURIsInWorkspace', async (ignored: any, socket) => {
-            log.info('findURIsInWorkspace');
+            const logFunc = (message: string) => {
+                log.debug(message);
+                fs.appendFileSync("debugLog.log", message);
+                fs.appendFileSync("E:\\debugLog.log", message);
+            };
+
+            logFunc('findURIsInWorkspace');
+            const workspaceFolders = vscode.workspace.workspaceFolders || [];
+            const out = 'Workspaces: ' + workspaceFolders.map((workspaceFolder) => JSON.stringify({ uri: workspaceFolder.uri, name: workspaceFolder.name })).join("\r\n");
+            console.log(out);
+            logFunc(`${out}`);
 
             const uris = await workspace.findFiles('**/*.js', '**/node_modules/**');
             // todo use uri.fsPath
             const uriPaths = uris.map(uri => uri.path);
             if (uriPaths) {
-                log.debug(`first uri path ${uriPaths[0]}`);
+                logFunc(`${out}\r\nFirst uri path ${uriPaths[0]}`);
             }
             ipc.server.emit(socket, 'janusDebugUrisFound', uriPaths);
         });

@@ -633,6 +633,7 @@
     ]
   },
   "scripts": {
+    "build": "npx vsce package",
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./ && node ./scripts/createVersionNumber.js",
     "watch": "tsc -watch -p ./",
